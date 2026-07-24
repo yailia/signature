@@ -324,141 +324,52 @@
 
       let nameElement = document.getElementById('name');
       const nameText = document.getElementById('in-name').value;
-      
-      // Проверяем, есть ли уже контейнер с изображением
-      let imgElement = null;
-      let fallbackElement = null;
-      let container = null;
-      
-      if (nameElement.tagName === 'SPAN' && nameElement.querySelector('img')) {
-        // Уже есть контейнер
-        container = nameElement;
-        imgElement = container.querySelector('img');
-        fallbackElement = container.querySelector('span[aria-hidden="true"]');
-      } else if (nameElement.tagName === 'IMG') {
-        // Только изображение, нужно создать контейнер
-        container = document.createElement('span');
-        container.style.position = 'relative';
-        container.style.display = 'inline-block';
-        container.style.verticalAlign = 'top';
-        imgElement = nameElement;
-        nameElement.parentNode.replaceChild(container, nameElement);
-        container.appendChild(imgElement);
-      }
-      
-      if (imgElement && container) {
-        // Обновляем существующее изображение
-        const styles = {
+
+      // Стили рендера. Когда #name уже <img>, computedStyle не даст шрифт — берём фикс.
+      let styles;
+      if (nameElement.tagName === 'IMG') {
+        styles = {
           fontSize: '26px',
           fontWeight: '700',
           fontFamily: "'QB One Bold', Manrope, Arial, sans-serif",
           color: '#16103E',
           lineHeight: '1.2'
         };
-        
-        const overrideHeightRaw = document.getElementById('in-canvas-height').value.trim();
-        const overrideHeight = overrideHeightRaw === '' ? null : parseInt(overrideHeightRaw, 10);
-        const options = (overrideHeight > 0) ? { overrideHeight } : {};
-        const result = await textToImage(nameText, styles, options);
-        document.getElementById('in-canvas-height').value = result.heightUsed;
-        imgElement.src = result.dataUrl;
-        imgElement.alt = nameText;
-        imgElement.id = 'name';
-        // Пиним логический размер, чтобы dpr-холст не отрисовался вдвое крупнее.
-        imgElement.setAttribute('width', result.width);
-        imgElement.setAttribute('height', result.height);
-        imgElement.style.width = result.width + 'px';
-        imgElement.style.height = result.height + 'px';
-        
-        // Обновляем fallback текст
-        if (fallbackElement) {
-          fallbackElement.textContent = nameText;
-        } else {
-          // Создаем fallback, если его нет
-          fallbackElement = document.createElement('span');
-          fallbackElement.textContent = nameText;
-          fallbackElement.style.cssText = nameElement.style.cssText;
-          fallbackElement.style.position = 'absolute';
-          fallbackElement.style.left = '-9999px';
-          fallbackElement.style.visibility = 'hidden';
-          fallbackElement.setAttribute('aria-hidden', 'true');
-          container.insertBefore(fallbackElement, imgElement);
-        }
-        
-        imgElement.onerror = function() {
-          imgElement.style.display = 'none';
-          fallbackElement.style.position = 'static';
-          fallbackElement.style.visibility = 'visible';
-          fallbackElement.style.left = 'auto';
-        };
       } else {
-        // Получаем стили элемента
-        const computedStyle = window.getComputedStyle(nameElement);
-        const styles = {
-          fontSize: computedStyle.fontSize,
-          fontWeight: computedStyle.fontWeight,
-          fontFamily: computedStyle.fontFamily,
-          color: computedStyle.color,
-          lineHeight: computedStyle.lineHeight
+        const cs = window.getComputedStyle(nameElement);
+        styles = {
+          fontSize: cs.fontSize,
+          fontWeight: cs.fontWeight,
+          fontFamily: cs.fontFamily,
+          color: cs.color,
+          lineHeight: cs.lineHeight
         };
-        
-        // Преобразуем текст в изображение
-        const overrideHeightRaw = document.getElementById('in-canvas-height').value.trim();
-        const overrideHeight = overrideHeightRaw === '' ? null : parseInt(overrideHeightRaw, 10);
-        const options = (overrideHeight > 0) ? { overrideHeight } : {};
-        const result = await textToImage(nameText, styles, options);
-        document.getElementById('in-canvas-height').value = result.heightUsed;
-        
-        // Для email: создаем структуру где текст всегда в HTML как fallback
-        // Текст будет виден, если изображение не загрузится
-        
-        // Создаем img элемент
-        const img = document.createElement('img');
-        img.id = 'name';
-        img.src = result.dataUrl;
-        img.alt = nameText; // Alt текст как fallback для email
-        img.style.cssText = nameElement.style.cssText;
-        img.style.display = 'inline-block';
-        img.style.verticalAlign = 'top';
-        img.style.marginRight = '6px';
-        // Пиним логический размер (dpr-холст иначе будет вдвое крупнее).
-        img.setAttribute('width', result.width);
-        img.setAttribute('height', result.height);
-        img.style.width = result.width + 'px';
-        img.style.height = result.height + 'px';
-        
-        // Создаем текст как дополнительный fallback (всегда в HTML)
-        // В email клиентах, если изображение не загрузится, alt текст будет виден
-        // Но для надежности добавляем и текстовый fallback
-        const fallbackText = document.createElement('span');
-        fallbackText.textContent = nameText;
-        fallbackText.style.cssText = nameElement.style.cssText;
-        fallbackText.style.verticalAlign = 'top';
-        fallbackText.style.display = 'inline-block';
-        fallbackText.style.marginRight = '6px';
-        // Скрываем текст, когда изображение загружено (через CSS)
-        // Но если изображение не загрузится, текст будет виден
-        fallbackText.style.fontSize = '0';
-        fallbackText.style.lineHeight = '0';
-        fallbackText.style.width = '1px';
-        fallbackText.style.height = '1px';
-        fallbackText.style.overflow = 'hidden';
-        fallbackText.style.opacity = '0';
-        
-        // Создаем контейнер
-        const container = document.createElement('span');
-        container.style.display = 'inline-block';
-        container.style.verticalAlign = 'top';
-        container.style.position = 'relative';
-        
-        // Добавляем элементы (сначала изображение, потом текст)
-        container.appendChild(img);
-        container.appendChild(fallbackText);
-        
-        // Заменяем элемент
-        nameElement.parentNode.replaceChild(container, nameElement);
       }
-      
+
+      const overrideHeightRaw = document.getElementById('in-canvas-height').value.trim();
+      const overrideHeight = overrideHeightRaw === '' ? null : parseInt(overrideHeightRaw, 10);
+      const options = (overrideHeight > 0) ? { overrideHeight } : {};
+      const result = await textToImage(nameText, styles, options);
+      document.getElementById('in-canvas-height').value = result.heightUsed;
+
+      // Имя = ОДНА <img>, без текстового fallback.
+      // Раньше скрытый span (opacity:0/font-size:0/position) всплывал в почте, т.к. она режет эти стили.
+      // Теперь единственный fallback — alt.
+      let img;
+      if (nameElement.tagName === 'IMG') {
+        img = nameElement;
+      } else {
+        img = document.createElement('img');
+        img.id = 'name';
+        nameElement.parentNode.replaceChild(img, nameElement);
+      }
+      img.src = result.dataUrl;
+      img.alt = nameText;
+      img.setAttribute('width', result.width);
+      img.setAttribute('height', result.height);
+      img.style.cssText = 'display:inline-block;vertical-align:top;margin-right:6px;border:0;width:' +
+        result.width + 'px;height:' + result.height + 'px;';
+
       document.getElementById('position').textContent = document.getElementById('in-position').value;
       document.getElementById('phone').textContent = "+" + document.getElementById('in-phone').value;
       const raw = document.getElementById('in-phone').value;
