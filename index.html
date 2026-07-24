@@ -220,7 +220,7 @@
 
       // Логические (CSS) единицы. Рисуем в dpr раз больше — резко на Retina/Safari.
       const dpr = Math.max(1, window.devicePixelRatio || 1);
-      const PAD_X = 4;   // горизонтальный запас, чтобы Safari не резал выносные части глифов
+      const PAD_X = 8;   // горизонтальный запас, чтобы Safari не резал выносные части глифов
       const PAD_Y = 4;   // вертикальный запас сверху/снизу
 
       const measureCanvas = document.createElement('canvas');
@@ -249,7 +249,13 @@
 
       // Всегда одна строка — без переноса, независимо от длины имени.
       const lines = [text];
-      const contentWidth = mctx.measureText(text).width;
+      const m = mctx.measureText(text);
+      // Реальный визуальный вылет глифов (Safari занижает advance width у жирного шрифта → правый край режется).
+      const leftBearing = m.actualBoundingBoxLeft || 0;
+      const rightExtent = m.actualBoundingBoxRight || m.width;
+      const contentWidth = Math.max(m.width, leftBearing + rightExtent);
+      // Сдвиг отрисовки, чтобы левый вылет не обрезался.
+      const drawX = PAD_X + leftBearing;
 
       // Логические размеры холста с паддингом.
       const logicalWidth = Math.ceil(contentWidth) + PAD_X * 2;
@@ -267,7 +273,7 @@
       ctx.textBaseline = 'top';
 
       lines.forEach((line, index) => {
-        ctx.fillText(line, PAD_X, PAD_Y + index * effectiveLineHeight);
+        ctx.fillText(line, drawX, PAD_Y + index * effectiveLineHeight);
       });
 
       return {
