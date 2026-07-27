@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="x-apple-disable-message-reformatting">
   <meta name="x-apple-disable-message-reformatting">
-  <title>Signature — Naman</title>
+  <title>Signature — John Doe</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://static.slotegrator.pro" crossorigin>
@@ -40,7 +40,7 @@
           <tr>
             <td id="avatar-cell" width="33.33%"
               style="padding-right: 20px;vertical-align: top;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
-              <img id="result" src="https://cdn.slotegrator.pro/signature/placeholder.png" width="160px" height="177px"
+              <img id="result" src="https://cdn.slotegrator.pro/signature/avatar.png" width="160px" height="177px"
                 alt="Avatar"
                 style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important;">
             </td>
@@ -49,7 +49,7 @@
               style="vertical-align: top;text-align: start;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;"
               width="auto">
               <span style="white-space: nowrap;">
-                <strong id="name" style="font-size: 26px; color: #16103E; font-weight: 700; line-height: 120%; font-family: 'QB One Bold', Manrope, Arial, sans-serif; vertical-align: top; display: inline; max-width: 300px;">Naman Bajaj</strong><img src="https://cdn.slotegrator.pro/signature/new_releases.png" width="23px" height="23px"
+                <strong id="name" style="font-size: 26px; color: #16103E; font-weight: 700; line-height: 120%; font-family: 'QB One Bold', Manrope, Arial, sans-serif; vertical-align: top; display: inline; max-width: 300px;">John Doe</strong><img src="https://cdn.slotegrator.pro/signature/new_releases.png" width="23px" height="23px"
                   style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important; vertical-align: top; display: inline-block;"></span>
               <br>
               <span id="position"
@@ -125,13 +125,21 @@
     </tr>
   </table>
 
+  <!-- Pipedrive preview. Derived from #signature on every update — never edit by hand. -->
+  <div style="margin-top: 40px; padding-top: 20px; border-top: 1px dashed #ccc;">
+    <div style="font-family: Manrope, Arial, sans-serif; font-size: 12px; color: #888; margin-bottom: 8px;">
+      Pipedrive version (preview) — font sizes and families are dropped by Pipedrive's sanitizer
+    </div>
+    <div id="signature-pipedrive"></div>
+  </div>
+
   <div style="margin-top: 100px; display: flex; flex-direction: column; max-width: 400px; gap: 5px;">
     <label style="display: flex; align-items: center; gap: 6px;">
       <input id="in-photo" type="checkbox" checked onchange="togglePhoto()"> Show photo
     </label>
 
     <label for="in-name">Name</label>
-    <input id="in-name" value="Naman Bajaj" placeholder="Naman Bajaj" required onchange="updateImage()">
+    <input id="in-name" value="John Doe" placeholder="John Doe" required onchange="updateImage()">
 
     <label for="in-canvas-height">Canvas height (px)</label>
     <input id="in-canvas-height" type="number" min="1" placeholder="auto" title="Оставьте пустым для авто (с учётом line-height / Safari)" onchange="updateImage()">
@@ -152,36 +160,41 @@
     <input id="in-linkedin" placeholder="https://www.linkedin.com/in/andrii-lypovyi-78aab9321/" required>
 
     <label for="in-filename">Avatar image name</label>
-    <input id="in-filename" placeholder="Andrii-Lypovyi or avatar" required>
+    <input id="in-filename" value="avatar" placeholder="Andrii-Lypovyi or avatar" required>
 
     <button onclick="updateImage()">Generate</button>
-    <button type="button" onclick="copyPage()">Copy Signature</button>
+    <button type="button" onclick="copyPage('signature', this)">Copy for Gmail</button>
+    <button type="button" onclick="copyPage('signature-pipedrive', this, true)">Copy for Pipedrive</button>
+    <div style="font-family: Manrope, Arial, sans-serif; font-size: 12px; color: #888; line-height: 140%;">
+      After pasting into Pipedrive: the name image lands at the bottom of the block — drag it back next to
+      the badge and resize it as needed.
+    </div>
   </div>
 
   <script>
-    function flashCopied() {
-      var btn = document.querySelector('button[onclick="copyPage()"]');
+    function flashCopied(btn) {
       if (btn) { var t = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = t; }, 1500); }
     }
 
     // Fallback для file:// и старых браузеров, где нет navigator.clipboard.
-    function legacyCopy(el) {
+    function legacyCopy(el, btn) {
       const selection = window.getSelection();
       selection.removeAllRanges();
       const range = document.createRange();
       range.selectNode(el);
       selection.addRange(range);
       try {
-        if (document.execCommand('copy')) flashCopied();
+        if (document.execCommand('copy')) flashCopied(btn);
       } finally {
         selection.removeAllRanges();
       }
     }
 
-    async function copyPage() {
-      const el = document.getElementById('signature');
+    // innerOnly — для контейнера-обёртки (#signature-pipedrive), чтобы сам div не попал в буфер.
+    async function copyPage(id, btn, innerOnly) {
+      const el = document.getElementById(id);
       if (!el) return;
-      const html = el.outerHTML;
+      const html = innerOnly ? el.innerHTML : el.outerHTML;
       // Современный путь: кладём и text/html, и text/plain — так HTML-подпись вставляется в почтовый клиент.
       if (navigator.clipboard && window.ClipboardItem) {
         try {
@@ -191,13 +204,47 @@
               'text/plain': new Blob([el.innerText], { type: 'text/plain' })
             })
           ]);
-          flashCopied();
+          flashCopied(btn);
           return;
         } catch (e) {
           console.log('Clipboard API failed, falling back:', e);
         }
       }
-      legacyCopy(el);
+      legacyCopy(el, btn);
+    }
+
+    // Свойства, которые санитайзер Pipedrive вырезает при вставке.
+    // Убираем их и в превью — иначе превью врёт о том, как подпись реально выглядит в CRM.
+    const PIPEDRIVE_DROPPED_PROPS = [
+      'font-size',
+      'font-family',
+      'text-decoration',
+      'white-space',
+      '-webkit-text-size-adjust',
+      '-ms-text-size-adjust'
+    ];
+
+    function applyPipedriveTransform(root) {
+      const nodes = [root].concat(Array.from(root.querySelectorAll('*')));
+      nodes.forEach(el => {
+        el.removeAttribute('id');
+        if (!el.hasAttribute('style')) return;
+        PIPEDRIVE_DROPPED_PROPS.forEach(p => el.style.removeProperty(p));
+        // Перезапись атрибута из CSSOM заодно выкидывает mso-* и прочие нераспознанные декларации.
+        const css = el.style.cssText;
+        if (css) el.setAttribute('style', css);
+        else el.removeAttribute('style');
+      });
+    }
+
+    // Pipedrive-блок всегда производный от #signature — одна разметка, ноль рассинхрона.
+    function syncPipedriveBlock() {
+      const src = document.getElementById('signature');
+      const dst = document.getElementById('signature-pipedrive');
+      if (!src || !dst) return;
+      const clone = src.cloneNode(true);
+      applyPipedriveTransform(clone);
+      dst.replaceChildren(clone);
     }
     async function textToImage(text, styles, options) {
       options = options || {};
@@ -299,6 +346,7 @@
         cell.setAttribute('width', '0');
         cell.style.paddingRight = '0';
       }
+      syncPipedriveBlock();
     }
 
     // Функция для обновления текста имени в реальном времени
@@ -379,6 +427,8 @@
       document.getElementById('booking').href = document.getElementById('in-booking').value;
       document.getElementById('telegram').href = "https://t.me/" + document.getElementById('in-telegram').value;
       document.getElementById('linkedin').href = document.getElementById('in-linkedin').value;
+
+      syncPipedriveBlock();
     }
 
     // Инициализация при загрузке: имя захардкожено, сразу генерируем картинку и вставляем
