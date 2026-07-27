@@ -49,7 +49,7 @@
               style="vertical-align: top;text-align: start;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;"
               width="auto">
               <span style="white-space: nowrap;">
-                <strong id="name" style="font-size: 26px; color: #16103E; font-weight: 700; line-height: 120%; font-family: 'QB One Bold', Manrope, Arial, sans-serif; vertical-align: top; display: inline; max-width: 300px;">John Doe</strong><img src="https://cdn.slotegrator.pro/signature/new_releases.png" width="23px" height="23px"
+                <strong id="name" style="font-size: 26px; color: #16103E; font-weight: 700; line-height: 120%; font-family: 'QB One Bold', Manrope, Arial, sans-serif; vertical-align: top; display: inline; max-width: 300px;">John Doe</strong><img id="verified" src="https://cdn.slotegrator.pro/signature/new_releases.png" width="23px" height="23px"
                   style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important; vertical-align: top; display: inline-block;"></span>
               <br>
               <span id="position"
@@ -57,7 +57,7 @@
                 Manager</span>
               <hr style="border: 1px solid rgba(0, 0, 0, 0.65); margin: 12px 0; width: 100%;">
 
-              <table border="0" cellspacing="0" cellpadding="0"
+              <table id="phone-table" border="0" cellspacing="0" cellpadding="0"
                 style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                 <tr>
                   <td
@@ -69,10 +69,10 @@
                 </tr>
               </table>
 
-              <table cellpadding="0" cellspacing="0"
+              <table id="contacts-table" cellpadding="0" cellspacing="0"
                 style="width: 100%;border: 0;margin-top: 25px;max-width: 280px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                 <tr>
-                  <td align="left"
+                  <td align="left" data-slot="booking"
                     style="white-space: nowrap;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                     <a id="booking" href="https://slotegrator.pipedrive.com/scheduler/WAq8q6H2/meeting-default"
                       target="_blank"
@@ -80,10 +80,10 @@
                       Book a meeting
                     </a>
                   </td>
-                  <td width="10"
+                  <td width="10" data-spacer="10"
                     style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                   </td>
-                  <td align="left"
+                  <td align="left" data-slot="telegram"
                     style="white-space: nowrap;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                     <a id="telegram" href="https://t.me/upicz"
                       style="display: inline-block;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;">
@@ -91,10 +91,10 @@
                         style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important;">
                     </a>
                   </td>
-                  <td width="6"
+                  <td width="6" data-spacer="6"
                     style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                   </td>
-                  <td align="left"
+                  <td align="left" data-slot="whatsapp"
                     style="white-space: nowrap;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                     <a id="whatsapp" href="https://api.whatsapp.com/send?phone=420608567323"
                       style="display: inline-block;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;">
@@ -102,10 +102,10 @@
                         style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important;">
                     </a>
                   </td>
-                  <td width="6"
+                  <td width="6" data-spacer="6"
                     style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                   </td>
-                  <td align="left"
+                  <td align="left" data-slot="linkedin"
                     style="white-space: nowrap;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                     <a id="linkedin" href="https://www.linkedin.com/in/p-ustinov/"
                       style="display: inline-block;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;">
@@ -128,14 +128,100 @@
   <!-- Pipedrive preview. Derived from #signature on every update — never edit by hand. -->
   <div style="margin-top: 40px; padding-top: 20px; border-top: 1px dashed #ccc;">
     <div style="font-family: Manrope, Arial, sans-serif; font-size: 12px; color: #888; margin-bottom: 8px;">
-      Pipedrive version (preview) — font sizes and families are dropped by Pipedrive's sanitizer
+      Pipedrive version (preview) — font sizes and families are dropped by Pipedrive's sanitizer.
+      The frame below is the real composer canvas, 500&times;262. Nothing may overflow it.
     </div>
-    <div id="signature-pipedrive"></div>
+    <!-- Рамка = канвас композера Pipedrive. Переполнение видно здесь, а не после вставки. -->
+    <div style="width: 500px; height: 262px; overflow: auto; border: 1px dashed #f00; box-sizing: border-box;">
+      <div id="signature-pipedrive"></div>
+    </div>
   </div>
 
-  <div style="margin-top: 100px; display: flex; flex-direction: column; max-width: 400px; gap: 5px;">
+  <details style="margin-top: 60px; max-width: 640px; font-family: Manrope, Arial, sans-serif; font-size: 14px; color: #16103E; line-height: 150%;">
+    <summary style="cursor: pointer; font-weight: 700; font-size: 16px; padding: 8px 0;">How to use</summary>
+
+    <p><strong>1. Build your signature</strong></p>
+    <ol>
+      <li>Fill in every field below, then press <strong>Generate</strong>.</li>
+      <li>Use the checkboxes to drop anything you don't need — spacing closes up on its own, and whatever
+        is switched off is removed from the copied signature entirely.</li>
+      <li>Check the two previews at the top of the page. The second one sits inside a red 500&times;262 frame —
+        that is the real size of the Pipedrive editor. Nothing may stick out of it.</li>
+    </ol>
+
+    <p><strong>2a. Gmail</strong></p>
+    <ol>
+      <li>Press <strong>Copy for Gmail</strong>.</li>
+      <li>In Gmail: <em>Settings</em> &rarr; <em>See all settings</em> &rarr; <em>General</em> &rarr; <em>Signature</em>.</li>
+      <li>Create a signature or pick an existing one, click inside the editing box and paste
+        (<kbd>Ctrl</kbd>+<kbd>V</kbd> / <kbd>Cmd</kbd>+<kbd>V</kbd>).</li>
+      <li>Scroll to the bottom of the settings page and press <strong>Save Changes</strong>.</li>
+    </ol>
+    <p>Paste straight into the settings box. Going through a compose window first can re-encode the images.</p>
+
+    <p><strong>2b. Pipedrive</strong></p>
+    <p style="background: #FFF4CC; border-left: 4px solid #E5A800; padding: 10px 12px; margin: 8px 0;">
+      <strong>Read this before you paste.</strong> Pipedrive does not keep the name where it belongs. On paste it
+      pulls the name image out of the layout and drops it at the very bottom of the block, below everything else.
+      The signature will look broken and it will have no name on it. This is expected — you have to put the name
+      back by hand: drag it up to the right of the photo, on the line above the job title, next to the blue badge.
+      Nothing else needs moving.
+    </p>
+    <ol>
+      <li>Press <strong>Copy for Pipedrive</strong>. This is a different, simplified version — the Gmail one
+        will not survive Pipedrive's editor.</li>
+      <li>In Pipedrive: <em>Personal preferences</em> &rarr; <em>Email sync</em> &rarr; <em>Signature</em>.</li>
+      <li>Click inside the editor and paste.</li>
+      <li><strong>Put the name back.</strong> Scroll to the bottom of the pasted block — the name image is
+        sitting there on its own. Drag it up to the right of the photo, onto the line directly above the job
+        title, so it lands to the left of the blue badge.</li>
+      <li>If the size looks off, click the image and drag its corner handle.</li>
+      <li>Save, then reload the page to confirm the signature stayed intact, and send yourself a test email.</li>
+    </ol>
+
+    <p><strong>What Pipedrive changes, and why</strong></p>
+    <p>Its editor is a rich-text field, not an HTML one. On paste it strips font sizes, font families and
+      link underline settings, so:</p>
+    <ul>
+      <li>Text uses the editor's own font at its own size. You can adjust it with the Pipedrive toolbar —
+        its scale is 10 / 13 / 14 / 18 / 24 / 32.</li>
+      <li>Keep it at <strong>18 or below</strong>. At 24 the contact icons no longer fit on one line and wrap.</li>
+      <li>Links come out underlined. Nothing can be done about that from our side.</li>
+      <li>The name is an image, so its font is unaffected.</li>
+    </ul>
+
+    <p><strong>If something looks wrong</strong></p>
+    <ul>
+      <li><em>Name missing</em> — it is at the bottom of the pasted block. Drag it up next to the photo.
+        Pipedrive always does this; there is no way to paste it in place.</li>
+      <li><em>Icons on a second line</em> — the font size is above 18. Lower it.</li>
+      <li><em>Broken avatar</em> — <em>Avatar image name</em> must match the file name on the CDN, without the
+        <code>.png</code> extension.</li>
+      <li><em>Images vanished after saving</em> — reload before you panic; if they are really gone, paste again.</li>
+    </ul>
+  </details>
+
+  <div style="margin-top: 40px; display: flex; flex-direction: column; max-width: 400px; gap: 5px;">
     <label style="display: flex; align-items: center; gap: 6px;">
-      <input id="in-photo" type="checkbox" checked onchange="togglePhoto()"> Show photo
+      <input id="in-photo" type="checkbox" checked onchange="applyToggles()"> Show photo
+    </label>
+    <label style="display: flex; align-items: center; gap: 6px;">
+      <input id="in-verified" type="checkbox" checked onchange="applyToggles()"> Show verified badge
+    </label>
+    <label style="display: flex; align-items: center; gap: 6px;">
+      <input id="in-phone-on" type="checkbox" checked onchange="applyToggles()"> Show phone
+    </label>
+    <label style="display: flex; align-items: center; gap: 6px;">
+      <input id="in-booking-on" type="checkbox" checked onchange="applyToggles()"> Show Book a meeting
+    </label>
+    <label style="display: flex; align-items: center; gap: 6px;">
+      <input id="in-telegram-on" type="checkbox" checked onchange="applyToggles()"> Show Telegram
+    </label>
+    <label style="display: flex; align-items: center; gap: 6px;">
+      <input id="in-whatsapp-on" type="checkbox" checked onchange="applyToggles()"> Show WhatsApp
+    </label>
+    <label style="display: flex; align-items: center; gap: 6px;">
+      <input id="in-linkedin-on" type="checkbox" checked onchange="applyToggles()"> Show LinkedIn
     </label>
 
     <label for="in-name">Name</label>
@@ -166,8 +252,8 @@
     <button type="button" onclick="copyPage('signature', this)">Copy for Gmail</button>
     <button type="button" onclick="copyPage('signature-pipedrive', this, true)">Copy for Pipedrive</button>
     <div style="font-family: Manrope, Arial, sans-serif; font-size: 12px; color: #888; line-height: 140%;">
-      After pasting into Pipedrive: the name image lands at the bottom of the block — drag it back next to
-      the badge and resize it as needed.
+      After pasting into Pipedrive the name image lands at the bottom of the block — drag it up next to the
+      photo yourself, then resize it. See "How to use" above.
     </div>
   </div>
 
@@ -190,11 +276,20 @@
       }
     }
 
+    // Outlook desktop игнорирует display:none на <td>, так что скрытое нельзя просто прятать стилем —
+    // из копии оно вырезается физически. На странице display:none остаётся ради мгновенного переключения.
+    function stripHidden(root) {
+      Array.from(root.querySelectorAll('[style*="display: none"], [style*="display:none"]'))
+        .forEach(el => el.remove());
+    }
+
     // innerOnly — для контейнера-обёртки (#signature-pipedrive), чтобы сам div не попал в буфер.
     async function copyPage(id, btn, innerOnly) {
       const el = document.getElementById(id);
       if (!el) return;
-      const html = innerOnly ? el.innerHTML : el.outerHTML;
+      const clone = el.cloneNode(true);
+      stripHidden(clone);
+      const html = innerOnly ? clone.innerHTML : clone.outerHTML;
       // Современный путь: кладём и text/html, и text/plain — так HTML-подпись вставляется в почтовый клиент.
       if (navigator.clipboard && window.ClipboardItem) {
         try {
@@ -224,7 +319,37 @@
       '-ms-text-size-adjust'
     ];
 
+    // Композер Pipedrive — 500x262. Дефолтная вёрстка (520 + падинги 20) в него не влезает,
+    // и всё переносится. Ужимаем до 488 без внешних падингов — у редактора свои.
+    // Колонка контента = 488 - (аватар 160 + 10) = 318 при нижней строке в 289 → запас 29px
+    // на то, что шрифт Pipedrive шире нашего (наш font-size он всё равно срезает).
+    function applyPipedriveFit(root) {
+      root.style.maxWidth = '488px';
+
+      const outerCell = root.querySelector('td');
+      if (outerCell) outerCell.style.padding = '0';
+
+      const avatarCell = root.querySelector('#avatar-cell');
+      if (avatarCell) avatarCell.style.paddingRight = '10px';
+
+      // Ширину нижней строки не ограничиваем: её держит колонка контента,
+      // а свой max-width таблица всё равно перебивает неразрывным содержимым.
+      const contacts = root.querySelector('#contacts-table');
+      if (contacts) contacts.style.maxWidth = 'none';
+
+      const booking = root.querySelector('#booking');
+      if (booking) {
+        booking.style.padding = '8px 10px';
+        // white-space: nowrap санитайзер срезает, поэтому перенос запрещаем содержимым.
+        booking.textContent = booking.textContent.trim().replace(/\s+/g, '\u00a0');
+      }
+
+      // Второй слой защиты от переноса: атрибуты Pipedrive не трогает.
+      Array.from(root.querySelectorAll('[data-slot]')).forEach(td => td.setAttribute('nowrap', 'nowrap'));
+    }
+
     function applyPipedriveTransform(root) {
+      applyPipedriveFit(root);
       const nodes = [root].concat(Array.from(root.querySelectorAll('*')));
       nodes.forEach(el => {
         el.removeAttribute('id');
@@ -243,6 +368,7 @@
       const dst = document.getElementById('signature-pipedrive');
       if (!src || !dst) return;
       const clone = src.cloneNode(true);
+      stripHidden(clone);
       applyPipedriveTransform(clone);
       dst.replaceChildren(clone);
     }
@@ -331,21 +457,59 @@
       };
     }
 
-    // Показать/скрыть фото. Схлопываем саму <td> (display:none + сброс width/padding),
-    // иначе пустая ячейка держит ~33% ширины и текст уезжает.
-    function togglePhoto() {
-      const cb = document.getElementById('in-photo');
-      const cell = document.getElementById('avatar-cell');
-      if (!cell) return;
-      if (cb.checked) {
-        cell.style.display = '';
-        cell.setAttribute('width', '33.33%');
-        cell.style.paddingRight = '20px';
-      } else {
-        cell.style.display = 'none';
-        cell.setAttribute('width', '0');
-        cell.style.paddingRight = '0';
+    function isOn(id) {
+      const cb = document.getElementById(id);
+      return !cb || cb.checked;
+    }
+
+    function setShown(el, shown) {
+      if (el) el.style.display = shown ? '' : 'none';
+    }
+
+    // Спейсеры не привязаны к соседям жёстко: гасим все и заново расставляем по одному
+    // между каждой парой видимых слотов. Иначе от скрытой иконки остаётся дырка.
+    function rebalanceSpacers(table) {
+      if (!table) return;
+      const cells = Array.from(table.querySelectorAll('td'));
+      const spacers = cells.filter(td => td.hasAttribute('data-spacer'));
+      spacers.forEach(td => setShown(td, false));
+
+      const visibleSlots = cells.filter(td => td.hasAttribute('data-slot') && td.style.display !== 'none');
+      setShown(table, visibleSlots.length > 0);
+
+      for (let i = 1; i < visibleSlots.length; i++) {
+        // Первый спейсер между предыдущим и текущим видимым слотом.
+        let node = visibleSlots[i - 1].nextElementSibling;
+        while (node && node !== visibleSlots[i]) {
+          if (node.hasAttribute('data-spacer')) { setShown(node, true); break; }
+          node = node.nextElementSibling;
+        }
       }
+    }
+
+    // Единая точка для всех переключателей. Фото схлопываем вместе с width/padding самой <td>,
+    // иначе пустая ячейка держит ~33% ширины и текст уезжает.
+    function applyToggles() {
+      const cell = document.getElementById('avatar-cell');
+      if (cell) {
+        const on = isOn('in-photo');
+        setShown(cell, on);
+        cell.setAttribute('width', on ? '33.33%' : '0');
+        cell.style.paddingRight = on ? '20px' : '0';
+      }
+
+      setShown(document.getElementById('verified'), isOn('in-verified'));
+      setShown(document.getElementById('phone-table'), isOn('in-phone-on'));
+
+      const contacts = document.getElementById('contacts-table');
+      if (contacts) {
+        [['booking', 'in-booking-on'], ['telegram', 'in-telegram-on'],
+         ['whatsapp', 'in-whatsapp-on'], ['linkedin', 'in-linkedin-on']].forEach(([slot, cbId]) => {
+          setShown(contacts.querySelector('[data-slot="' + slot + '"]'), isOn(cbId));
+        });
+        rebalanceSpacers(contacts);
+      }
+
       syncPipedriveBlock();
     }
 
@@ -433,7 +597,7 @@
 
     // Инициализация при загрузке: имя захардкожено, сразу генерируем картинку и вставляем
     document.addEventListener('DOMContentLoaded', function() {
-      togglePhoto();
+      applyToggles();
       updateImage();
     });
   </script>
