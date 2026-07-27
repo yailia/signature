@@ -313,16 +313,28 @@
             <!-- Ширина в пикселях, не в процентах: иначе раскладку диктует фактический размер файла. -->
             <td id="avatar-cell" width="160"
               style="width: 160px;padding-right: 20px;vertical-align: top;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
-              <!-- Бокс жёсткий 160x177. height:auto здесь был причиной уезжающей сетки:
-                   картинка другого размера меняла высоту строки и ширину колонки. -->
+              <!-- Бокс жёстко 160x177 и в атрибутах, и в стиле. Атрибуты обязательны:
+                   object-fit Pipedrive срезает, а width="160px" (с единицами) невалиден и
+                   игнорируется — именно из-за него картинка рисовалась в натуральный размер
+                   и разносила сетку. Пересэмплировать файл через canvas нельзя: CDN отдаёт
+                   картинки без CORS, холст протухает. Файл не того соотношения сплющится —
+                   об этом предупреждает подсказка под полем. -->
               <img id="result" src="https://cdn.slotegrator.pro/signature/avatar.png" width="160" height="177"
                 alt="Avatar"
-                style="-ms-interpolation-mode: bicubic;border: 0;width: 160px;height: 177px;object-fit: cover;line-height: 100%;outline: none;text-decoration: none !important;">
+                style="-ms-interpolation-mode: bicubic;border: 0;width: 160px;height: 177px;line-height: 100%;outline: none;text-decoration: none !important;">
             </td>
 
             <td
               style="vertical-align: top;text-align: start;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;"
               width="auto">
+
+            <!-- Две строки на высоту аватара (177): верх прижат к верхнему краю картинки,
+                 контакты — к нижнему. Высота в пикселях, а не 100%: процентную высоту
+                 вложенных таблиц почтовые клиенты не держат. -->
+            <table id="content-table" width="100%" height="177" border="0" cellspacing="0" cellpadding="0"
+              style="height: 177px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+              <tr>
+                <td style="vertical-align: top;padding-bottom: 25px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
               <span style="white-space: nowrap;">
                 <strong id="name" style="font-size: 26px; color: #16103E; font-weight: 700; line-height: 120%; font-family: 'QB One Bold', Manrope, Arial, sans-serif; vertical-align: top; display: inline; max-width: 300px;">John Doe</strong><img id="verified" src="https://cdn.slotegrator.pro/signature/new_releases.png" width="23px" height="23px"
                   style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important; vertical-align: top; display: inline-block;"></span>
@@ -344,11 +356,16 @@
                 </tr>
               </table>
 
+                </td>
+              </tr>
+              <tr>
+                <td height="1" style="vertical-align: bottom;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+
               <!-- Зазоры — паддингом на самих ячейках, а не отдельными ячейками-распорками:
                    пустую ячейку клиент схлопывает в ноль, когда рядом стоит ячейка на 100%,
                    а паддинг схлопнуть нечем. data-gap — зазор справа, снимается у последнего видимого. -->
               <table id="contacts-table" cellpadding="0" cellspacing="0"
-                style="border: 0;margin-top: 25px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+                style="border: 0;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                 <tr>
                   <td align="left" data-slot="booking" data-gap="10"
                     style="white-space: nowrap;padding-right: 10px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
@@ -391,6 +408,9 @@
                 </tr>
               </table>
 
+                </td>
+              </tr>
+            </table>
 
             </td>
           </tr>
@@ -795,6 +815,14 @@
         cell.setAttribute('width', on ? '160' : '0');
         cell.style.width = on ? '160px' : '0';
         cell.style.paddingRight = on ? '20px' : '0';
+
+        // Высота колонки контента равна высоте аватара. Без фото равнять не на что —
+        // снимаем, иначе блок держит пустые 177px.
+        const content = document.getElementById('content-table');
+        if (content) {
+          if (on) { content.setAttribute('height', '177'); content.style.height = '177px'; }
+          else { content.removeAttribute('height'); content.style.height = ''; }
+        }
       }
 
       setShown(document.getElementById('verified'), isOn('in-verified'));
@@ -833,21 +861,25 @@
     // Берём 260 с запасом, чтобы имя и бейдж гарантированно стояли в одну строку в обеих версиях.
     const MAX_NAME_WIDTH = 260;
 
-    // Бокс аватара жёсткий, поэтому файл другого размера будет обрезан или сплющен.
-    // Молча это делать нельзя — предупреждаем.
+    // Ширина у аватара фиксированная, высота считается по пропорциям файла.
+    // Поэтому важен не точный размер (320x354 для retina — нормальная загрузка),
+    // а соотношение сторон: от него зависит высота блока.
     const AVATAR_W = 160, AVATAR_H = 177;
+    const AVATAR_RATIO = AVATAR_W / AVATAR_H;
 
     function checkAvatarSize() {
       const img = document.getElementById('result');
       const warn = document.getElementById('avatar-warning');
       if (!img || !warn) return;
       if (!img.complete || !img.naturalWidth) { warn.hidden = true; return; }
-      const bad = img.naturalWidth !== AVATAR_W || img.naturalHeight !== AVATAR_H;
-      warn.hidden = !bad;
-      if (bad) {
+
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const off = Math.abs(ratio - AVATAR_RATIO) / AVATAR_RATIO;
+      warn.hidden = off <= 0.02;
+      if (!warn.hidden) {
         warn.textContent = 'This file is ' + img.naturalWidth + '×' + img.naturalHeight +
-          '. The signature expects ' + AVATAR_W + '×' + AVATAR_H +
-          ', so it will be cropped or squashed. Re-upload it at the right size.';
+          ', a different shape from the ' + AVATAR_W + '×' + AVATAR_H + ' the layout is built for. ' +
+          'It is being squashed into that box — re-crop it to the same proportions.';
       }
     }
 
