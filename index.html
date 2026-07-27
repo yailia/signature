@@ -22,12 +22,281 @@
       font-style: normal;
       font-display: swap;
     }
+
+    /* Токены из slotegrator-astro/client/src/styles/variables. */
+    :root {
+      --navy: #16103e;
+      --navy-80: rgba(22, 16, 62, .8);
+      --navy-65: rgba(22, 16, 62, .65);
+      --navy-55: rgba(22, 16, 62, .55);
+      --navy-40: rgba(22, 16, 62, .4);
+      --navy-10: rgba(22, 16, 62, .1);
+      --primary: #e92128;
+      --primary-hover: #cb2128;
+      --green: #89e500;
+      --gray-50: #f9fbfd;
+      --gray-100: #f6f8fa;
+      --gray-300: #e3e8ec;
+      --radius: 4px;
+      --shadow: 0 2px 10px rgba(0, 26, 66, .15);
+      --shadow-sm: 0 1px 5px rgba(0, 26, 66, .15);
+      --font: "Manrope", Arial, sans-serif;
+      --font-heading: "QB One Bold", "Manrope", Arial, sans-serif;
+    }
+
+    /* ВСЁ страничное оформление живёт под .ui и только там.
+       Подпись уходит в буфер обмена, где внешних стилей не существует, —
+       любое правило, дотянувшееся до #signature, развалит её в почте. */
+    /* Две колонки: контролы слева, превью справа прилипшим асайдом.
+       Ширина правой колонки продиктована канвасом Pipedrive — 500px плюс паддинги карточки. */
+    .ui {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: clamp(20px, 4vw, 48px);
+      font-family: var(--font);
+      color: var(--navy);
+      font-size: 16px;
+      line-height: 1.55;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 588px;
+      gap: 0 28px;
+      align-items: start;
+    }
+
+    .ui > h1,
+    .ui > .subtitle { grid-column: 1 / -1; }
+
+    .ui .side {
+      grid-column: 2;
+      grid-row: 3 / span 99;
+      position: sticky;
+      top: 24px;
+      /* Превью выше вьюпорта — прокручиваем их внутри асайда, а не всей страницей. */
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+    }
+
+    .ui .side .card:last-child { margin-bottom: 0; }
+
+    /* Ниже 1200px колонки не помещаются: раскладываем в один поток, липкость снимаем. */
+    @media (max-width: 1200px) {
+      .ui { display: block; }
+      .ui .side { position: static; max-height: none; overflow: visible; }
+    }
+
+    /* box-sizing навешиваем точечно, а не через .ui * — иначе border-box уедет в подпись
+       и пересчитает её ячейки. */
+    .ui .card,
+    .ui .toggle,
+    .ui .preview,
+    .ui .canvas,
+    .ui input,
+    .ui button { box-sizing: border-box; }
+
+    /* Граница страничных стилей. Подпись внутри превью должна наследовать ровно то же,
+       что и от <body> в письме, — иначе превью врёт. */
+    .ui .sig-host {
+      font-family: Manrope, Arial, sans-serif;
+      font-size: medium;
+      font-weight: 400;
+      line-height: normal;
+      letter-spacing: normal;
+      color: #333333;
+    }
+
+    .ui h1 {
+      font-family: var(--font-heading);
+      font-size: 33px;
+      line-height: 1.2;
+      margin: 0 0 6px;
+    }
+
+    .ui .subtitle {
+      color: var(--navy-65);
+      margin: 0 0 32px;
+    }
+
+    .ui .card {
+      background: #fff;
+      border: 1px solid var(--navy-10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .ui .card > h2 {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      line-height: 1.35;
+      margin: 0 0 4px;
+    }
+
+    .ui .card > .hint {
+      color: var(--navy-65);
+      font-size: 14px;
+      margin: 0 0 16px;
+    }
+
+    .ui .note {
+      background: var(--gray-100);
+      border-left: 4px solid var(--primary);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 12px 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .ui .note a { color: var(--primary); }
+    .ui .note a:hover { color: var(--primary-hover); }
+
+    /* Поля */
+    .ui .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px 20px;
+    }
+
+    .ui .field { display: flex; flex-direction: column; gap: 6px; }
+
+    .ui label.caption {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy-80);
+    }
+
+    .ui input[type="text"],
+    .ui input[type="number"],
+    .ui input:not([type]) {
+      height: 44px;
+      width: 100%;
+      padding: 0 18px;
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: .02rem;
+      color: var(--navy);
+      background: #fff;
+      border: 1px solid var(--navy-40);
+      border-radius: var(--radius);
+      transition: border-color .2s ease-in-out, box-shadow .2s ease-in-out;
+    }
+
+    .ui input:hover { border-color: var(--navy-55); }
+
+    .ui input:focus {
+      outline: none;
+      border-color: var(--navy-65);
+      box-shadow: var(--shadow);
+    }
+
+    .ui input::placeholder { color: var(--navy-40); font-weight: 400; }
+
+    /* Чекбоксы */
+    .ui .toggles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px 20px;
+    }
+
+    .ui .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--gray-50);
+      border: 1px solid var(--navy-10);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color .2s ease-in-out, background-color .2s ease-in-out;
+    }
+
+    .ui .toggle:hover { border-color: var(--navy-40); background: #fff; }
+    .ui .toggle input { width: 18px; height: 18px; accent-color: var(--navy); cursor: pointer; }
+
+    /* Кнопки */
+    .ui .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .ui button {
+      padding: 0 25px;
+      height: 48px;
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .01em;
+      line-height: 1;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background-color .3s ease-in-out, border-color .3s ease-in-out;
+    }
+
+    .ui button.primary { background: var(--green); border-color: var(--green); color: #000; }
+    .ui button.primary:hover { background: #7bcf00; border-color: #7bcf00; }
+    .ui button.secondary { background: var(--navy-80); border-color: var(--navy-80); color: #fff; }
+    .ui button.secondary:hover { background: var(--navy); border-color: var(--navy); }
+
+    /* Превью */
+    .ui .preview {
+      background: linear-gradient(180deg, #fff 0%, var(--gray-100) 100%);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    /* Рамка = реальный канвас композера Pipedrive, поэтому размер жёсткий. */
+    .ui .canvas {
+      width: 500px;
+      height: 262px;
+      overflow: auto;
+      border: 1px dashed var(--primary);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    /* Хелпер */
+    .ui details summary {
+      cursor: pointer;
+      font-family: var(--font-heading);
+      font-size: 20px;
+      list-style: none;
+    }
+
+    .ui details summary::-webkit-details-marker { display: none; }
+    .ui details summary::before { content: "▸ "; color: var(--navy-55); }
+    .ui details[open] summary::before { content: "▾ "; }
+    .ui details[open] summary { margin-bottom: 12px; }
+    .ui details p, .ui details li { font-size: 14px; }
+    .ui details code, .ui details kbd {
+      background: var(--gray-100);
+      border: 1px solid var(--navy-10);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 13px;
+    }
   </style>
 
 </head>
 
 <body
   style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;padding: 0;font-family: Manrope, Arial, sans-serif;color: #333333;margin: 0 !important;width: 100% !important;">
+
+  <div class="ui">
+
+  <h1>Email signature generator</h1>
+  <p class="subtitle">Fill in the fields, then copy the version you need — Gmail and Pipedrive are not the same.</p>
+
+  <aside class="side">
+
+  <div class="card">
+    <h2>Gmail preview</h2>
+    <p class="hint">This is what "Copy for Gmail" puts on your clipboard.</p>
+    <div class="preview">
+      <div class="sig-host">
 
   <table id="signature" role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="100%"
     style="max-width: 520px;margin: auto 0;border-radius: 6px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
@@ -125,20 +394,26 @@
     </tr>
   </table>
 
-  <!-- Pipedrive preview. Derived from #signature on every update — never edit by hand. -->
-  <div style="margin-top: 40px; padding-top: 20px; border-top: 1px dashed #ccc;">
-    <div style="font-family: Manrope, Arial, sans-serif; font-size: 12px; color: #888; margin-bottom: 8px;">
-      Pipedrive version (preview) — font sizes and families are dropped by Pipedrive's sanitizer.
-      The frame below is the real composer canvas, 500&times;262. Nothing may overflow it.
-    </div>
-    <!-- Рамка = канвас композера Pipedrive. Переполнение видно здесь, а не после вставки. -->
-    <div style="width: 500px; height: 262px; overflow: auto; border: 1px dashed #f00; box-sizing: border-box;">
-      <div id="signature-pipedrive"></div>
+      </div>
     </div>
   </div>
 
-  <details style="margin-top: 60px; max-width: 640px; font-family: Manrope, Arial, sans-serif; font-size: 14px; color: #16103E; line-height: 150%;">
-    <summary style="cursor: pointer; font-weight: 700; font-size: 16px; padding: 8px 0;">How to use</summary>
+  <!-- Pipedrive preview. Derived from #signature on every update — never edit by hand. -->
+  <div class="card">
+    <h2>Pipedrive preview</h2>
+    <p class="hint">
+      Font sizes and families are dropped by Pipedrive's sanitizer, so this version looks different by design.
+      The dashed frame is the real composer canvas, 500&times;262 — nothing may overflow it.
+    </p>
+    <div class="canvas">
+      <div id="signature-pipedrive" class="sig-host"></div>
+    </div>
+  </div>
+
+  </aside>
+
+  <details class="card">
+    <summary>How to use</summary>
 
     <p><strong>1. Build your signature</strong></p>
     <ol>
@@ -199,62 +474,85 @@
         <code>.png</code> extension.</li>
       <li><em>Images vanished after saving</em> — reload before you panic; if they are really gone, paste again.</li>
     </ul>
+
+    <div class="note">
+      <strong>Still stuck?</strong> Do not send a broken signature out. Message <strong>i.ivanov</strong> in
+      Rocket.Chat and it will be sorted out.
+    </div>
   </details>
 
-  <div style="margin-top: 40px; display: flex; flex-direction: column; max-width: 400px; gap: 5px;">
-    <label style="display: flex; align-items: center; gap: 6px;">
-      <input id="in-photo" type="checkbox" checked onchange="applyToggles()"> Show photo
-    </label>
-    <label style="display: flex; align-items: center; gap: 6px;">
-      <input id="in-verified" type="checkbox" checked onchange="applyToggles()"> Show verified badge
-    </label>
-    <label style="display: flex; align-items: center; gap: 6px;">
-      <input id="in-phone-on" type="checkbox" checked onchange="applyToggles()"> Show phone
-    </label>
-    <label style="display: flex; align-items: center; gap: 6px;">
-      <input id="in-booking-on" type="checkbox" checked onchange="applyToggles()"> Show Book a meeting
-    </label>
-    <label style="display: flex; align-items: center; gap: 6px;">
-      <input id="in-telegram-on" type="checkbox" checked onchange="applyToggles()"> Show Telegram
-    </label>
-    <label style="display: flex; align-items: center; gap: 6px;">
-      <input id="in-whatsapp-on" type="checkbox" checked onchange="applyToggles()"> Show WhatsApp
-    </label>
-    <label style="display: flex; align-items: center; gap: 6px;">
-      <input id="in-linkedin-on" type="checkbox" checked onchange="applyToggles()"> Show LinkedIn
-    </label>
+  <div class="card">
+    <h2>What to show</h2>
+    <p class="hint">Anything switched off is removed from the copied signature, not just hidden.</p>
+    <div class="toggles">
+      <label class="toggle"><input id="in-photo" type="checkbox" checked onchange="applyToggles()"> Photo</label>
+      <label class="toggle"><input id="in-verified" type="checkbox" checked onchange="applyToggles()"> Verified badge</label>
+      <label class="toggle"><input id="in-phone-on" type="checkbox" checked onchange="applyToggles()"> Phone</label>
+      <label class="toggle"><input id="in-booking-on" type="checkbox" checked onchange="applyToggles()"> Book a meeting</label>
+      <label class="toggle"><input id="in-telegram-on" type="checkbox" checked onchange="applyToggles()"> Telegram</label>
+      <label class="toggle"><input id="in-whatsapp-on" type="checkbox" checked onchange="applyToggles()"> WhatsApp</label>
+      <label class="toggle"><input id="in-linkedin-on" type="checkbox" checked onchange="applyToggles()"> LinkedIn</label>
+    </div>
+  </div>
 
-    <label for="in-name">Name</label>
-    <input id="in-name" value="John Doe" placeholder="John Doe" required onchange="updateImage()">
+  <div class="card">
+    <h2>Details</h2>
+    <p class="hint">Press Generate after editing — the name is rendered to an image, so it does not update on its own.</p>
+    <div class="grid">
+      <div class="field">
+        <label class="caption" for="in-name">Name</label>
+        <input id="in-name" value="John Doe" placeholder="John Doe" required onchange="updateImage()">
+      </div>
+      <div class="field">
+        <label class="caption" for="in-position">Position</label>
+        <input id="in-position" placeholder="Sales Manager" required>
+      </div>
+      <div class="field">
+        <label class="caption" for="in-phone">Phone</label>
+        <input id="in-phone" placeholder="420 (608) 567 323" required>
+      </div>
+      <div class="field">
+        <label class="caption" for="in-booking">Booking link</label>
+        <input id="in-booking" placeholder="https://slotegrator.pipedrive.com/scheduler/xxxx" required>
+      </div>
+      <div class="field">
+        <label class="caption" for="in-telegram">Telegram</label>
+        <input id="in-telegram" placeholder="andrii_slotegrator" required>
+      </div>
+      <div class="field">
+        <label class="caption" for="in-linkedin">LinkedIn</label>
+        <input id="in-linkedin" placeholder="https://www.linkedin.com/in/andrii-lypovyi-78aab9321/" required>
+      </div>
+      <div class="field">
+        <label class="caption" for="in-filename">Avatar image name</label>
+        <input id="in-filename" value="avatar" placeholder="Andrii-Lypovyi or avatar" required>
+      </div>
+      <div class="field">
+        <label class="caption" for="in-canvas-height">Canvas height (px)</label>
+        <input id="in-canvas-height" type="number" min="1" placeholder="auto"
+          title="Оставьте пустым для авто (с учётом line-height / Safari)" onchange="updateImage()">
+      </div>
+    </div>
+  </div>
 
-    <label for="in-canvas-height">Canvas height (px)</label>
-    <input id="in-canvas-height" type="number" min="1" placeholder="auto" title="Оставьте пустым для авто (с учётом line-height / Safari)" onchange="updateImage()">
-
-    <label for="in-position">Position</label>
-    <input id="in-position" placeholder="Sales Manager" required>
-
-    <label for="in-phone">Phone</label>
-    <input id="in-phone" placeholder="420 (608) 567 323" required>
-
-    <label for="in-booking">Booking link</label>
-    <input id="in-booking" placeholder="https://slotegrator.pipedrive.com/scheduler/xxxx" required>
-
-    <label for="in-telegram">Telegram</label>
-    <input id="in-telegram" placeholder="andrii_slotegrator" required>
-
-    <label for="in-linkedin">LinkedIn</label>
-    <input id="in-linkedin" placeholder="https://www.linkedin.com/in/andrii-lypovyi-78aab9321/" required>
-
-    <label for="in-filename">Avatar image name</label>
-    <input id="in-filename" value="avatar" placeholder="Andrii-Lypovyi or avatar" required>
-
-    <button onclick="updateImage()">Generate</button>
-    <button type="button" onclick="copyPage('signature', this)">Copy for Gmail</button>
-    <button type="button" onclick="copyPage('signature-pipedrive', this, true)">Copy for Pipedrive</button>
-    <div style="font-family: Manrope, Arial, sans-serif; font-size: 12px; color: #888; line-height: 140%;">
+  <div class="card">
+    <h2>Copy</h2>
+    <p class="hint">Two different versions — pick the one that matches where you are pasting.</p>
+    <div class="actions">
+      <button class="secondary" onclick="updateImage()">Generate</button>
+      <button class="primary" type="button" onclick="copyPage('signature', this)">Copy for Gmail</button>
+      <button class="primary" type="button" onclick="copyPage('signature-pipedrive', this, true)">Copy for Pipedrive</button>
+    </div>
+    <p class="hint" style="margin: 16px 0 0;">
       After pasting into Pipedrive the name image lands at the bottom of the block — drag it up next to the
       photo yourself, then resize it. See "How to use" above.
+    </p>
+    <div class="note" style="margin-top: 16px;">
+      <strong>Stuck?</strong> If anything does not work or the signature comes out broken, message
+      <strong>i.ivanov</strong> in Rocket.Chat instead of sending it out as is.
     </div>
+  </div>
+
   </div>
 
   <script>
@@ -594,8 +892,6 @@
       updateImage();
     });
   </script>
-
-  </div>
 </body>
 
 </html>
