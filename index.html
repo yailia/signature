@@ -193,6 +193,9 @@
 
     .ui input::placeholder { color: var(--navy-40); font-weight: 400; }
 
+    .ui .warn { font-size: 13px; line-height: 1.4; color: var(--primary); }
+    .ui .warn[hidden] { display: none; }
+
     /* Чекбоксы */
     .ui .toggles {
       display: grid;
@@ -307,11 +310,14 @@
         <table width="100%" border="0" cellspacing="0" cellpadding="0"
           style="max-width: 480px;font-family: Manrope, Arial, sans-serif;margin: 0;background: #fff;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
           <tr>
-            <td id="avatar-cell" width="33.33%"
-              style="padding-right: 20px;vertical-align: top;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
-              <img id="result" src="https://cdn.slotegrator.pro/signature/avatar.png" width="160px" height="177px"
+            <!-- Ширина в пикселях, не в процентах: иначе раскладку диктует фактический размер файла. -->
+            <td id="avatar-cell" width="160"
+              style="width: 160px;padding-right: 20px;vertical-align: top;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+              <!-- Бокс жёсткий 160x177. height:auto здесь был причиной уезжающей сетки:
+                   картинка другого размера меняла высоту строки и ширину колонки. -->
+              <img id="result" src="https://cdn.slotegrator.pro/signature/avatar.png" width="160" height="177"
                 alt="Avatar"
-                style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important;">
+                style="-ms-interpolation-mode: bicubic;border: 0;width: 160px;height: 177px;object-fit: cover;line-height: 100%;outline: none;text-decoration: none !important;">
             </td>
 
             <td
@@ -526,6 +532,7 @@
       <div class="field">
         <label class="caption" for="in-filename">Avatar image name</label>
         <input id="in-filename" value="avatar" placeholder="Andrii-Lypovyi or avatar" required>
+        <span id="avatar-warning" class="warn" hidden></span>
       </div>
       <div class="field">
         <label class="caption" for="in-canvas-height">Canvas height (px)</label>
@@ -785,7 +792,8 @@
       if (cell) {
         const on = isOn('in-photo');
         setShown(cell, on);
-        cell.setAttribute('width', on ? '33.33%' : '0');
+        cell.setAttribute('width', on ? '160' : '0');
+        cell.style.width = on ? '160px' : '0';
         cell.style.paddingRight = on ? '20px' : '0';
       }
 
@@ -821,9 +829,37 @@
       }
     }
 
+    // Колонка контента: Gmail ~300px, Pipedrive ~310px. Минус бейдж 23 и отступ 6 — остаётся ~271.
+    // Берём 260 с запасом, чтобы имя и бейдж гарантированно стояли в одну строку в обеих версиях.
+    const MAX_NAME_WIDTH = 260;
+
+    // Бокс аватара жёсткий, поэтому файл другого размера будет обрезан или сплющен.
+    // Молча это делать нельзя — предупреждаем.
+    const AVATAR_W = 160, AVATAR_H = 177;
+
+    function checkAvatarSize() {
+      const img = document.getElementById('result');
+      const warn = document.getElementById('avatar-warning');
+      if (!img || !warn) return;
+      if (!img.complete || !img.naturalWidth) { warn.hidden = true; return; }
+      const bad = img.naturalWidth !== AVATAR_W || img.naturalHeight !== AVATAR_H;
+      warn.hidden = !bad;
+      if (bad) {
+        warn.textContent = 'This file is ' + img.naturalWidth + '×' + img.naturalHeight +
+          '. The signature expects ' + AVATAR_W + '×' + AVATAR_H +
+          ', so it will be cropped or squashed. Re-upload it at the right size.';
+      }
+    }
+
     async function updateImage() {
       const filename = document.getElementById('in-filename').value;
-      document.getElementById('result').src = 'https://cdn.slotegrator.pro/signature/' + filename + ".png";
+      const avatar = document.getElementById('result');
+      avatar.onload = checkAvatarSize;
+      avatar.onerror = function () {
+        const warn = document.getElementById('avatar-warning');
+        if (warn) { warn.hidden = false; warn.textContent = 'No such file on the CDN — check the name.'; }
+      };
+      avatar.src = 'https://cdn.slotegrator.pro/signature/' + filename + ".png";
 
       let nameElement = document.getElementById('name');
       const nameText = document.getElementById('in-name').value;
@@ -866,12 +902,20 @@
         img.id = 'name';
         nameElement.parentNode.replaceChild(img, nameElement);
       }
+      // Длинное имя ужимаем пропорционально: иначе картинка плюс бейдж (23px) шире колонки
+      // контента и бейдж уезжает на следующую строку. В Pipedrive это не лечится nowrap —
+      // санитайзер его срезает, поэтому ограничение должно быть в самих размерах картинки.
+      // Холст при этом остаётся полного разрешения, так что ужатое имя выглядит только резче.
+      const scale = Math.min(1, MAX_NAME_WIDTH / result.width);
+      const shownWidth = Math.round(result.width * scale);
+      const shownHeight = Math.round(result.height * scale);
+
       img.src = result.dataUrl;
       img.alt = nameText;
-      img.setAttribute('width', result.width);
-      img.setAttribute('height', result.height);
+      img.setAttribute('width', shownWidth);
+      img.setAttribute('height', shownHeight);
       img.style.cssText = 'display:inline-block;vertical-align:top;margin-right:6px;border:0;width:' +
-        result.width + 'px;height:' + result.height + 'px;';
+        shownWidth + 'px;height:' + shownHeight + 'px;';
 
       document.getElementById('position').textContent = document.getElementById('in-position').value;
       document.getElementById('phone').textContent = "+" + document.getElementById('in-phone').value;
