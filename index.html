@@ -69,51 +69,49 @@
                 </tr>
               </table>
 
-              <!-- Без width:100%: таблица сжимается по содержимому, поэтому при скрытых иконках
-                   оставшиеся не разъезжаются по ширине колонки, а держатся у левого края. -->
+              <!-- Зазоры — паддингом на самих ячейках, а не отдельными ячейками-распорками:
+                   пустую ячейку клиент схлопывает в ноль, когда рядом стоит ячейка на 100%,
+                   а паддинг схлопнуть нечем. data-gap — зазор справа, снимается у последнего видимого. -->
               <table id="contacts-table" cellpadding="0" cellspacing="0"
-                style="border: 0;margin-top: 25px;max-width: 280px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+                style="border: 0;margin-top: 25px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                 <tr>
-                  <td align="left" data-slot="booking"
-                    style="white-space: nowrap;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+                  <td align="left" data-slot="booking" data-gap="10"
+                    style="white-space: nowrap;padding-right: 10px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                     <a id="booking" href="https://slotegrator.pipedrive.com/scheduler/WAq8q6H2/meeting-default"
                       target="_blank"
                       style="font-size: 14px;background: #89E500;color: black;text-decoration: none!important;font-weight: 600;padding: 9px 10px;border-radius: 10px;display: inline-block;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;">
                       Book a meeting
                     </a>
                   </td>
-                  <td width="10" data-spacer="10"
-                    style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
-                  </td>
-                  <td align="left" data-slot="telegram"
-                    style="white-space: nowrap;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+                  <td align="left" data-slot="telegram" data-gap="6"
+                    style="white-space: nowrap;padding-right: 6px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                     <a id="telegram" href="https://t.me/upicz"
                       style="display: inline-block;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;">
                       <img src="https://cdn.slotegrator.pro/signature/icons/t-g.png" width="34" height="34" alt="Telegram"
                         style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important;">
                     </a>
                   </td>
-                  <td width="6" data-spacer="6"
-                    style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
-                  </td>
-                  <td align="left" data-slot="whatsapp"
-                    style="white-space: nowrap;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+                  <td align="left" data-slot="whatsapp" data-gap="6"
+                    style="white-space: nowrap;padding-right: 6px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                     <a id="whatsapp" href="https://api.whatsapp.com/send?phone=420608567323"
                       style="display: inline-block;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;">
                       <img src="https://cdn.slotegrator.pro/signature/icons/wzup.png" width="34" height="34" alt="Whatsapp"
                         style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important;">
                     </a>
                   </td>
-                  <td width="6" data-spacer="6"
-                    style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
-                  </td>
-                  <td align="left" data-slot="linkedin"
-                    style="white-space: nowrap;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
+                  <td align="left" data-slot="linkedin" data-gap="6"
+                    style="white-space: nowrap;padding-right: 0;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                     <a id="linkedin" href="https://www.linkedin.com/in/p-ustinov/"
                       style="display: inline-block;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;">
                       <img src="https://cdn.slotegrator.pro/signature/icons/l-i.png" width="34" height="34" alt="Linkedin"
                         style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important;">
                     </a>
+                  </td>
+                  <!-- Распорка: забирает всю лишнюю ширину, если клиент растянет таблицу
+                       (Pipedrive это делает). Без неё оставшиеся иконки разъезжаются как space-between.
+                       В таблице по содержимому её вклад нулевой, так что вреда нет. -->
+                  <td width="100%" data-filler="1"
+                    style="-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
                   </td>
                 </tr>
               </table>
@@ -335,7 +333,7 @@
       if (avatarCell) avatarCell.style.paddingRight = '10px';
 
       // Ширину нижней строки не ограничиваем: её держит колонка контента,
-      // а свой max-width таблица всё равно перебивает неразрывным содержимым.
+      // а прижатие влево обеспечивает ячейка-распорка на 100%.
       const contacts = root.querySelector('#contacts-table');
       if (contacts) contacts.style.maxWidth = 'none';
 
@@ -468,25 +466,18 @@
       if (el) el.style.display = shown ? '' : 'none';
     }
 
-    // Спейсеры не привязаны к соседям жёстко: гасим все и заново расставляем по одному
-    // между каждой парой видимых слотов. Иначе от скрытой иконки остаётся дырка.
-    function rebalanceSpacers(table) {
+    // Зазор живёт на самой ячейке (padding-right), поэтому от скрытой иконки не остаётся дырки.
+    // У последнего видимого слота зазор снимаем — иначе строка не прижата вплотную справа.
+    function rebalanceGaps(table) {
       if (!table) return;
-      const cells = Array.from(table.querySelectorAll('td'));
-      const spacers = cells.filter(td => td.hasAttribute('data-spacer'));
-      spacers.forEach(td => setShown(td, false));
-
-      const visibleSlots = cells.filter(td => td.hasAttribute('data-slot') && td.style.display !== 'none');
+      const visibleSlots = Array.from(table.querySelectorAll('[data-slot]'))
+        .filter(td => td.style.display !== 'none');
       setShown(table, visibleSlots.length > 0);
 
-      for (let i = 1; i < visibleSlots.length; i++) {
-        // Первый спейсер между предыдущим и текущим видимым слотом.
-        let node = visibleSlots[i - 1].nextElementSibling;
-        while (node && node !== visibleSlots[i]) {
-          if (node.hasAttribute('data-spacer')) { setShown(node, true); break; }
-          node = node.nextElementSibling;
-        }
-      }
+      visibleSlots.forEach((td, i) => {
+        const last = i === visibleSlots.length - 1;
+        td.style.paddingRight = last ? '0' : (td.getAttribute('data-gap') || '6') + 'px';
+      });
     }
 
     // Единая точка для всех переключателей. Фото схлопываем вместе с width/padding самой <td>,
@@ -509,7 +500,7 @@
          ['whatsapp', 'in-whatsapp-on'], ['linkedin', 'in-linkedin-on']].forEach(([slot, cbId]) => {
           setShown(contacts.querySelector('[data-slot="' + slot + '"]'), isOn(cbId));
         });
-        rebalanceSpacers(contacts);
+        rebalanceGaps(contacts);
       }
 
       syncPipedriveBlock();
