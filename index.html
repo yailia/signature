@@ -335,9 +335,9 @@
               style="height: 177px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
               <tr>
                 <td style="vertical-align: top;padding-bottom: 25px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;">
-              <span style="white-space: nowrap;">
-                <strong id="name" style="font-size: 26px; color: #16103E; font-weight: 700; line-height: 120%; font-family: 'QB One Bold', Manrope, Arial, sans-serif; vertical-align: top; display: inline; max-width: 300px;">John Doe</strong><img id="verified" src="https://cdn.slotegrator.pro/signature/new_releases.png" width="23px" height="23px"
-                  style="-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none !important; vertical-align: top; display: inline-block;"></span>
+              <!-- Значок verified не отдельная <img>, а часть картинки с именем:
+                   отдельным элементом он переносился на вторую строку. -->
+              <strong id="name" style="font-size: 26px; color: #16103E; font-weight: 700; line-height: 120%; font-family: 'QB One Bold', Manrope, Arial, sans-serif; vertical-align: top; display: inline; max-width: 300px;">John Doe</strong>
               <br>
               <span id="position"
                 style="font-size: 14px; color: rgba(22, 16, 62, 0.80); font-weight: 500; line-height: 135%; ">Project
@@ -697,6 +697,26 @@
       applyPipedriveTransform(clone);
       dst.replaceChildren(clone);
     }
+    // Badge вшит в файл, а не берётся с CDN: drawImage с cdn.slotegrator.pro протухает холст
+    // (нет CORS), и toDataURL бросает исключение. 617 байт, поэтому дешевле встроить.
+    const BADGE_DATA_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAH+SURBVHgBzVZLctNAEH3dlquyNCdAgmKNOQHOCXBOQHKCqIBkG3tHVUxZuYFzAnIDmxsk+1AyJ8BrjLrpUeJEEvo55aJ4G6m7Z/q1Zub1CPhfECL2t/EXwU0DThFPu4z4E8XzD7g9dL6PuB062/lPOZ425aC6oKvUJUIDVH7vT/BqURXnGoJelzBHCxB5Z7XxQmK/wxKS8msL9C3awxZQxUJJbhLhKEKw3Pi97CCPNCLwu/pFrKmYMLD5AyL1oRhu/PnlIqywAxDRz6xd2BNdYgdQyI8aEla0x0oIB4Bc/E2S38sHkhPEfduKEVoSQLD/JQmu1sKzYpDB712+Rxv3yiV8LU1H+k2hl0WCcwTXqY7K5/Us83zTEVISj3VkJH4pSULhRF4cWuKjEoJ55TwjMiGfPZIIjdIEZWAcu4clnq0FQUsCp4JlRzC+f79DuoacKrxMgLNzCdyXoA1BCsEbV1COJCXi75GVflw6SXElmlwydaZNBHaExxN5OdrYXj6IVaXYCUMjGOIJKOiEfOwA1lqeV5Podg2xCqr6LGvnG6RSuCZZMlEfSm+xHVamqRtRve4qR9lAbb89sdvPRgzQAHdcf9lpsvZeKoPa69fuhzFagE2gVQSNJBMEi4cGaO1FKDkwvZCVfuTsu1Fy8TlzQT0Z4V7F38peu7+Vf4I/o1S1Y4NrSaIAAAAASUVORK5CYII=';
+
+    const BADGE_SIZE = 23;   // как badge рисовался отдельной <img>
+    const BADGE_GAP = 4;     // зазор между именем и значком
+
+    let badgeImagePromise = null;
+    function loadBadge() {
+      if (!badgeImagePromise) {
+        badgeImagePromise = new Promise((resolve, reject) => {
+          const im = new Image();
+          im.onload = () => resolve(im);
+          im.onerror = reject;
+          im.src = BADGE_DATA_URI;
+        });
+      }
+      return badgeImagePromise;
+    }
+
     async function textToImage(text, styles, options) {
       options = options || {};
 
@@ -752,11 +772,18 @@
       const leftBearing = m.actualBoundingBoxLeft || 0;
       const rightExtent = m.actualBoundingBoxRight || m.width;
       const contentWidth = Math.max(m.width, leftBearing + rightExtent);
-      // Сдвиг отрисовки, чтобы левый вылет не обрезался.
-      const drawX = PAD_X + leftBearing;
+      // Слева паддинга нет: иначе картинка имени стоит на PAD_X правее линии и телефона,
+      // и левый край блока разъезжается. Левый вылет глифов покрывает сам leftBearing.
+      const drawX = leftBearing;
 
-      // Логические размеры холста с паддингом.
-      const logicalWidth = Math.ceil(contentWidth) + PAD_X * 2;
+      // Badge рисуем внутрь этого же холста. Отдельной <img> он переносился на вторую строку:
+      // в Pipedrive white-space: nowrap срезается, и удержать его рядом с именем нечем.
+      // Одна картинка перенестись не может по определению.
+      const badge = options.badge ? await loadBadge().catch(() => null) : null;
+      const badgeSpace = badge ? BADGE_GAP + BADGE_SIZE : 0;
+
+      // Паддинг только справа — см. drawX выше.
+      const logicalWidth = Math.ceil(contentWidth) + badgeSpace + PAD_X;
       const defaultHeight = Math.ceil(lines.length * effectiveLineHeight) + PAD_Y * 2;
       const logicalHeight = (options.overrideHeight > 0) ? options.overrideHeight : defaultHeight;
 
@@ -769,6 +796,12 @@
       ctx.font = fontStr;                  // ставим ПОСЛЕ resize/scale — иначе стейт сбрасывается
       ctx.fillStyle = styles.color || '#16103E';
       ctx.textBaseline = 'top';
+
+      if (badge) {
+        // Прижат к самому верху холста: по верху em-строки значок выглядит опущенным,
+        // потому что заглавные буквы начинаются ниже верхней границы шрифта.
+        ctx.drawImage(badge, Math.ceil(contentWidth) + BADGE_GAP, 0, BADGE_SIZE, BADGE_SIZE);
+      }
 
       lines.forEach((line, index) => {
         ctx.fillText(line, drawX, PAD_Y + index * effectiveLineHeight);
@@ -807,7 +840,17 @@
 
     // Единая точка для всех переключателей. Фото схлопываем вместе с width/padding самой <td>,
     // иначе пустая ячейка держит ~33% ширины и текст уезжает.
+    // Значок теперь запечён в картинку имени, поэтому его переключатель требует перерисовки,
+    // а не скрытия элемента. Держим последнее состояние, чтобы не гонять рендер вхолостую.
+    let lastBadgeState = true;
+
     function applyToggles() {
+      const badgeOn = isOn('in-verified');
+      if (badgeOn !== lastBadgeState) {
+        lastBadgeState = badgeOn;
+        updateImage();   // сам вызовет syncPipedriveBlock по завершении
+      }
+
       const cell = document.getElementById('avatar-cell');
       if (cell) {
         const on = isOn('in-photo');
@@ -825,7 +868,6 @@
         }
       }
 
-      setShown(document.getElementById('verified'), isOn('in-verified'));
       setShown(document.getElementById('phone-table'), isOn('in-phone-on'));
 
       const contacts = document.getElementById('contacts-table');
@@ -857,9 +899,9 @@
       }
     }
 
-    // Колонка контента: Gmail ~300px, Pipedrive ~310px. Минус бейдж 23 и отступ 6 — остаётся ~271.
-    // Берём 260 с запасом, чтобы имя и бейдж гарантированно стояли в одну строку в обеих версиях.
-    const MAX_NAME_WIDTH = 260;
+    // Колонка контента: Gmail ~289px, Pipedrive ~310px. Значок теперь внутри картинки,
+    // поэтому предел покрывает имя вместе с ним. 280 — впритык к Gmail, но с запасом в Pipedrive.
+    const MAX_NAME_WIDTH = 280;
 
     // Ширина у аватара фиксированная, высота считается по пропорциям файла.
     // Поэтому важен не точный размер (320x354 для retina — нормальная загрузка),
@@ -920,6 +962,7 @@
       const overrideHeightRaw = document.getElementById('in-canvas-height').value.trim();
       const overrideHeight = overrideHeightRaw === '' ? null : parseInt(overrideHeightRaw, 10);
       const options = (overrideHeight > 0) ? { overrideHeight } : {};
+      options.badge = isOn('in-verified');
       const result = await textToImage(nameText, styles, options);
       document.getElementById('in-canvas-height').value = result.heightUsed;
 
