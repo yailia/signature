@@ -528,6 +528,7 @@
       <div class="field">
         <label class="caption" for="in-name">Name</label>
         <input id="in-name" value="John Doe" placeholder="John Doe" required onchange="updateImage()">
+        <span id="font-warning" class="warn" hidden></span>
       </div>
       <div class="field">
         <label class="caption" for="in-position">Position</label>
@@ -553,11 +554,6 @@
         <label class="caption" for="in-filename">Avatar image name</label>
         <input id="in-filename" value="avatar" placeholder="Andrii-Lypovyi or avatar" required>
         <span id="avatar-warning" class="warn" hidden></span>
-      </div>
-      <div class="field">
-        <label class="caption" for="in-canvas-height">Canvas height (px)</label>
-        <input id="in-canvas-height" type="number" min="1" placeholder="auto"
-          title="Оставьте пустым для авто (с учётом line-height / Safari)" onchange="updateImage()">
       </div>
     </div>
   </div>
@@ -736,37 +732,30 @@
         }
       }
 
+      // Не догрузился QB One — имя нарисуется фолбэком, и это будет не та подпись.
+      // Молчать нельзя: визуально отличие неочевидно, а уходит оно в письма.
+      const fontWarn = document.getElementById('font-warning');
+      if (fontWarn) {
+        const ok = !document.fonts || !document.fonts.check || document.fonts.check(fontSpec);
+        fontWarn.hidden = ok;
+        if (!ok) {
+          fontWarn.textContent = 'QB One did not load, so the name is being drawn in a fallback font. ' +
+            'Reload the page before copying.';
+        }
+      }
+
       // Логические (CSS) единицы. Рисуем в dpr раз больше — резко на Retina/Safari.
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       const PAD_X = 8;   // горизонтальный запас, чтобы Safari не резал выносные части глифов
-      const PAD_Y = 4;   // вертикальный запас сверху/снизу
 
       const measureCanvas = document.createElement('canvas');
       const mctx = measureCanvas.getContext('2d');
       const fontFamily = styles.fontFamily || "'QB One Bold', Manrope, Arial, sans-serif";
       const fontStr = `${styles.fontWeight || '700'} ${styles.fontSize || '26px'} ${fontFamily}`;
       mctx.font = fontStr;
-      mctx.textBaseline = 'top';
-
-      const fontSizePx = parseInt(styles.fontSize, 10) || 26;
-
-      // Высота строки из line-height (число / % / px), не меньше размера шрифта.
-      let lineHeightPx = fontSizePx * 1.2;
-      const lh = styles.lineHeight;
-      if (lh) {
-        if (typeof lh === 'number' && lh > 0) {
-          lineHeightPx = fontSizePx * lh;
-        } else if (typeof lh === 'string') {
-          const trimmed = lh.trim();
-          if (trimmed.endsWith('%')) lineHeightPx = fontSizePx * (parseFloat(trimmed) / 100);
-          else if (trimmed.endsWith('px')) lineHeightPx = parseFloat(trimmed) || fontSizePx * 1.2;
-          else { const n = parseFloat(trimmed); if (!isNaN(n) && n > 0) lineHeightPx = fontSizePx * n; }
-        }
-      }
-      const effectiveLineHeight = Math.max(fontSizePx * 1.2, lineHeightPx);
+      mctx.textBaseline = 'alphabetic';
 
       // Всегда одна строка — без переноса, независимо от длины имени.
-      const lines = [text];
       const m = mctx.measureText(text);
       // Реальный визуальный вылет глифов (Safari занижает advance width у жирного шрифта → правый край режется).
       const leftBearing = m.actualBoundingBoxLeft || 0;
@@ -782,10 +771,18 @@
       const badge = options.badge ? await loadBadge().catch(() => null) : null;
       const badgeSpace = badge ? BADGE_GAP + BADGE_SIZE : 0;
 
+      // Высота — строго по метрикам глифов, без участия CSS line-height.
+      // line-height каждая платформа считает по-своему (macOS часто отдаёт `normal`),
+      // из-за чего картинка выходила выше нужного и распирала блок в Pipedrive.
+      // ascent/descent — метрики самого шрифта, они одинаковы везде.
+      const ascent = Math.ceil(m.actualBoundingBoxAscent || 0);
+      const descent = Math.ceil(m.actualBoundingBoxDescent || 0);
+      const inkHeight = Math.max(1, ascent + descent);
+
       // Паддинг только справа — см. drawX выше.
       const logicalWidth = Math.ceil(contentWidth) + badgeSpace + PAD_X;
-      const defaultHeight = Math.ceil(lines.length * effectiveLineHeight) + PAD_Y * 2;
-      const logicalHeight = (options.overrideHeight > 0) ? options.overrideHeight : defaultHeight;
+      const logicalHeight = Math.max(inkHeight, badge ? BADGE_SIZE : 0);
+      const baselineY = Math.max(ascent, badge ? Math.round((BADGE_SIZE - inkHeight) / 2) + ascent : 0);
 
       // Физический холст = логика * dpr.
       const canvas = document.createElement('canvas');
@@ -795,7 +792,7 @@
       ctx.scale(dpr, dpr);                 // дальше рисуем в логических координатах
       ctx.font = fontStr;                  // ставим ПОСЛЕ resize/scale — иначе стейт сбрасывается
       ctx.fillStyle = styles.color || '#16103E';
-      ctx.textBaseline = 'top';
+      ctx.textBaseline = 'alphabetic';
 
       if (badge) {
         // Прижат к самому верху холста: по верху em-строки значок выглядит опущенным,
@@ -803,9 +800,8 @@
         ctx.drawImage(badge, Math.ceil(contentWidth) + BADGE_GAP, 0, BADGE_SIZE, BADGE_SIZE);
       }
 
-      lines.forEach((line, index) => {
-        ctx.fillText(line, drawX, PAD_Y + index * effectiveLineHeight);
-      });
+      // Рисуем от базовой линии: верх краски приходится ровно на y = 0.
+      ctx.fillText(text, drawX, baselineY);
 
       return {
         dataUrl: canvas.toDataURL('image/png'),
@@ -959,12 +955,9 @@
         };
       }
 
-      const overrideHeightRaw = document.getElementById('in-canvas-height').value.trim();
-      const overrideHeight = overrideHeightRaw === '' ? null : parseInt(overrideHeightRaw, 10);
-      const options = (overrideHeight > 0) ? { overrideHeight } : {};
-      options.badge = isOn('in-verified');
-      const result = await textToImage(nameText, styles, options);
-      document.getElementById('in-canvas-height').value = result.heightUsed;
+      // Ручной высоты больше нет: она была костылём под платформозависимый line-height,
+      // а высота теперь считается по метрикам шрифта и одинакова везде.
+      const result = await textToImage(nameText, styles, { badge: isOn('in-verified') });
 
       // Имя = ОДНА <img>, без текстового fallback.
       // Раньше скрытый span (opacity:0/font-size:0/position) всплывал в почте, т.к. она режет эти стили.
