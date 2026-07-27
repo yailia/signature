@@ -462,21 +462,17 @@
 
     <p><strong>2b. Pipedrive</strong></p>
     <p style="background: #FFF4CC; border-left: 4px solid #E5A800; padding: 10px 12px; margin: 8px 0;">
-      <strong>Read this before you paste.</strong> Pipedrive does not keep the name where it belongs. On paste it
-      pulls the name image out of the layout and drops it at the very bottom of the block, below everything else.
-      The signature will look broken and it will have no name on it. This is expected — you have to put the name
-      back by hand: drag it up to the right of the photo, on the line above the job title, next to the blue badge.
-      Nothing else needs moving.
+      <strong>The name looks different here, on purpose.</strong> In this version it is plain text in Pipedrive's
+      own font, without the verified badge. In Gmail it is an image in our brand font. Pipedrive pulls generated
+      images out of the layout and dumps them at the bottom of the block, and dragging one back splits the table
+      in two — so the name is text instead. Nothing needs moving after you paste.
     </p>
     <ol>
       <li>Press <strong>Copy for Pipedrive</strong>. This is a different, simplified version — the Gmail one
         will not survive Pipedrive's editor.</li>
       <li>In Pipedrive: <em>Personal preferences</em> &rarr; <em>Email sync</em> &rarr; <em>Signature</em>.</li>
       <li>Click inside the editor and paste.</li>
-      <li><strong>Put the name back.</strong> Scroll to the bottom of the pasted block — the name image is
-        sitting there on its own. Drag it up to the right of the photo, onto the line directly above the job
-        title, so it lands to the left of the blue badge.</li>
-      <li>If the size looks off, click the image and drag its corner handle.</li>
+      <li>Optional: select the name and raise its size with the toolbar. Keep the rest at 18 or below.</li>
       <li>Save, then reload the page to confirm the signature stayed intact, and send yourself a test email.</li>
     </ol>
 
@@ -488,13 +484,14 @@
         its scale is 10 / 13 / 14 / 18 / 24 / 32.</li>
       <li>Keep it at <strong>18 or below</strong>. At 24 the contact icons no longer fit on one line and wrap.</li>
       <li>Links come out underlined. Nothing can be done about that from our side.</li>
-      <li>The name is an image, so its font is unaffected.</li>
+      <li>The name is plain text here, so it takes the editor's font. The brand font and the verified badge
+        only survive in the Gmail version, where the name is an image.</li>
     </ul>
 
     <p><strong>If something looks wrong</strong></p>
     <ul>
-      <li><em>Name missing</em> — it is at the bottom of the pasted block. Drag it up next to the photo.
-        Pipedrive always does this; there is no way to paste it in place.</li>
+      <li><em>An image sitting on its own at the bottom of the block</em> — you pasted the Gmail version into
+        Pipedrive. Undo it and use <strong>Copy for Pipedrive</strong>.</li>
       <li><em>Icons on a second line</em> — the font size is above 18. Lower it.</li>
       <li><em>Broken avatar</em> — <em>Avatar image name</em> must match the file name on the CDN, without the
         <code>.png</code> extension.</li>
@@ -567,8 +564,8 @@
       <button class="primary" type="button" onclick="copyPage('signature-pipedrive', this, true)">Copy for Pipedrive</button>
     </div>
     <p class="hint" style="margin: 16px 0 0;">
-      After pasting into Pipedrive the name image lands at the bottom of the block — drag it up next to the
-      photo yourself, then resize it. See "How to use" above.
+      The Pipedrive version renders the name as plain text without the verified badge — its editor cannot keep
+      a generated image in place. Paste it as is, nothing needs moving. See "How to use" above.
     </p>
     <div class="note" style="margin-top: 16px;">
       <strong>Stuck?</strong> If anything does not work or the signature comes out broken, message
@@ -665,6 +662,19 @@
         booking.textContent = booking.textContent.trim().replace(/\s+/g, '\u00a0');
       }
 
+      // Имя здесь — текст, а не картинка. Data-URI Pipedrive выдёргивает из вёрстки и
+      // аппендит в конец блока, а при попытке перетащить обратно рвёт ячейку надвое:
+      // должность и телефон уезжают во вторую колонку. Текст ничего этого не делает.
+      // Цена: шрифт и размер задаёт редактор, QB One там всё равно недостижим.
+      const nameImg = root.querySelector('#name');
+      if (nameImg && nameImg.tagName === 'IMG') {
+        const strong = document.createElement('strong');
+        strong.id = 'name';
+        strong.style.cssText = 'color: #16103E;font-weight: 700;line-height: 120%;';
+        strong.textContent = nameImg.getAttribute('alt') || '';
+        nameImg.parentNode.replaceChild(strong, nameImg);
+      }
+
       // Второй слой защиты от переноса: атрибуты Pipedrive не трогает.
       Array.from(root.querySelectorAll('[data-slot]')).forEach(td => td.setAttribute('nowrap', 'nowrap'));
     }
@@ -744,8 +754,12 @@
         }
       }
 
-      // Логические (CSS) единицы. Рисуем в dpr раз больше — резко на Retina/Safari.
-      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      // Ровно 1x, без devicePixelRatio. На retina (macOS) холст рисовался вдвое больше
+      // логического размера, и стоило Pipedrive потерять width/height при перетаскивании —
+      // браузер брал натуральный размер PNG, то есть имя вдвое крупнее нужного.
+      // Физический размер, равный логическому, — единственное, что не зависит от санитайзера.
+      // Цена: на retina имя мягче, как и остальные картинки подписи.
+      const dpr = 1;
       const PAD_X = 8;   // горизонтальный запас, чтобы Safari не резал выносные части глифов
 
       const measureCanvas = document.createElement('canvas');
