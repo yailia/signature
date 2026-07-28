@@ -668,11 +668,19 @@
       // Цена: шрифт и размер задаёт редактор, QB One там всё равно недостижим.
       const nameImg = root.querySelector('#name');
       if (nameImg && nameImg.tagName === 'IMG') {
+        // Размер задаём легаси-тегом <font size>, а не CSS: font-size санитайзер срезает,
+        // а HTML-атрибуты у него выживают (width, align, nowrap дошли целыми).
+        // Лестница <font size> — 10/13/16/18/24/32, а шкала тулбара Pipedrive — 10/13/14/18/24/32,
+        // то есть их редактор скорее всего сам пишет размеры этим же тегом.
+        // size="5" = 24px, ближайшее к 26px из дизайна. <strong> в дампе тоже выживал.
+        const font = document.createElement('font');
+        font.setAttribute('size', '5');
         const strong = document.createElement('strong');
         strong.id = 'name';
         strong.style.cssText = 'color: #16103E;font-weight: 700;line-height: 120%;';
         strong.textContent = nameImg.getAttribute('alt') || '';
-        nameImg.parentNode.replaceChild(strong, nameImg);
+        font.appendChild(strong);
+        nameImg.parentNode.replaceChild(font, nameImg);
       }
 
       // Второй слой защиты от переноса: атрибуты Pipedrive не трогает.
