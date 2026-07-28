@@ -193,7 +193,7 @@
 
     .ui input::placeholder { color: var(--navy-40); font-weight: 400; }
 
-    .ui .warn { display: block; font-size: 13px; line-height: 1.4; color: var(--primary); }
+    .ui .warn { font-size: 13px; line-height: 1.4; color: var(--primary); }
     .ui .warn[hidden] { display: none; }
 
     /* Чекбоксы */
@@ -476,23 +476,6 @@
       <li>Save, then reload the page to confirm the signature stayed intact, and send yourself a test email.</li>
     </ol>
 
-    <p><strong>2c. Optional: the brand font in Pipedrive too</strong></p>
-    <p>Text in Pipedrive always renders in the editor's font, so the name loses QB One and the verified badge.
-      Both come back if the name is an image — but only if that image sits on the CDN, since Pipedrive rips
-      generated images out of the layout and a pasted one cannot be put back. Uploading to the CDN is manual and
-      only <strong>i.ivanov</strong> has access, so this takes one round trip. Per person, once:</p>
-    <ol>
-      <li>Fill everything in and press <strong>Generate</strong>.</li>
-      <li>Press <strong>Download name.png</strong>. The file is named after the person —
-        <code>ataur-rosul-name.png</code> — and the signature points at exactly that name, so do not rename it.</li>
-      <li>Send that file to <strong>i.ivanov</strong> in Rocket.Chat and ask for it to be put on the CDN.</li>
-      <li>Once it is up, tick <strong>Pipedrive: name from CDN instead of text</strong>. A warning stays visible
-        while the file is missing and clears by itself once it is reachable — that is your confirmation.</li>
-      <li>Copy for Pipedrive as usual.</li>
-    </ol>
-    <p>Changing the name or turning the verified badge off changes the image, so it has to be sent and uploaded
-      again. If that sounds like too much, leave this off — plain text needs nobody's help.</p>
-
     <p><strong>What Pipedrive changes, and why</strong></p>
     <p>Its editor is a rich-text field, not an HTML one. On paste it strips font sizes, font families and
       link underline settings, so:</p>
@@ -501,8 +484,8 @@
         its scale is 10 / 13 / 14 / 18 / 24 / 32.</li>
       <li>Keep it at <strong>18 or below</strong>. At 24 the contact icons no longer fit on one line and wrap.</li>
       <li>Links come out underlined. Nothing can be done about that from our side.</li>
-      <li>The name is plain text here, so it takes the editor's font, sized with a legacy tag rather than CSS.
-        The brand font and the verified badge come back only via the CDN route in 2c.</li>
+      <li>The name is plain text here, so it takes the editor's font. The brand font and the verified badge
+        only survive in the Gmail version, where the name is an image.</li>
     </ul>
 
     <p><strong>If something looks wrong</strong></p>
@@ -579,13 +562,7 @@
       <button class="secondary" onclick="updateImage()">Generate</button>
       <button class="primary" type="button" onclick="copyPage('signature', this)">Copy for Gmail</button>
       <button class="primary" type="button" onclick="copyPage('signature-pipedrive', this, true)">Copy for Pipedrive</button>
-      <button class="secondary" type="button" onclick="downloadNamePng(this)">Download name.png</button>
     </div>
-    <label class="toggle" style="margin-top: 14px;">
-      <input id="in-cdn-name" type="checkbox" onchange="applyToggles()">
-      Pipedrive: name from CDN instead of text
-    </label>
-    <span id="cdn-name-warning" class="warn" hidden style="margin-top: 6px;"></span>
     <p class="hint" style="margin: 16px 0 0;">
       The Pipedrive version renders the name as plain text without the verified badge — its editor cannot keep
       a generated image in place. Paste it as is, nothing needs moving. See "How to use" above.
@@ -685,15 +662,12 @@
         booking.textContent = booking.textContent.trim().replace(/\s+/g, '\u00a0');
       }
 
-      // Имя. Data-URI Pipedrive выдёргивает из вёрстки и аппендит в конец блока, а при попытке
-      // перетащить обратно рвёт ячейку надвое — должность и телефон уезжают во вторую колонку.
-      // Поэтому data-URI здесь не бывает никогда: либо https-картинка с CDN, либо текст.
+      // Имя здесь — текст, а не картинка. Data-URI Pipedrive выдёргивает из вёрстки и
+      // аппендит в конец блока, а при попытке перетащить обратно рвёт ячейку надвое:
+      // должность и телефон уезжают во вторую колонку. Текст ничего этого не делает.
+      // Цена: шрифт и размер задаёт редактор, QB One там всё равно недостижим.
       const nameImg = root.querySelector('#name');
-      if (nameImg && nameImg.tagName === 'IMG' && isOn('in-cdn-name')) {
-        // Картинки по https санитайзер оставляет на месте — проверено на аватаре и иконках.
-        // Возвращает и QB One, и запечённый значок. Цена — файл надо залить на CDN руками.
-        nameImg.setAttribute('src', cdnNameUrl());
-      } else if (nameImg && nameImg.tagName === 'IMG') {
+      if (nameImg && nameImg.tagName === 'IMG') {
         // Размер задаём легаси-тегом <font size>, а не CSS: font-size санитайзер срезает,
         // а HTML-атрибуты у него выживают (width, align, nowrap дошли целыми).
         // Лестница <font size> — 10/13/16/18/24/32, а шкала тулбара Pipedrive — 10/13/14/18/24/32,
@@ -923,7 +897,6 @@
         rebalanceGaps(contacts);
       }
 
-      checkCdnName();
       syncPipedriveBlock();
     }
 
@@ -947,56 +920,6 @@
     // Колонка контента: Gmail ~289px, Pipedrive ~310px. Значок теперь внутри картинки,
     // поэтому предел покрывает имя вместе с ним. 280 — впритык к Gmail, но с запасом в Pipedrive.
     const MAX_NAME_WIDTH = 280;
-
-    const CDN_BASE = 'https://cdn.slotegrator.pro/signature/';
-
-    // Имя файла — слаг из самого имени плюс суффикс -name: ataur-rosul-name.png.
-    // Считается в одном месте, чтобы скачанный файл и ссылка в подписи не расходились.
-    function nameFileName() {
-      const raw = (document.getElementById('in-name').value || '').trim();
-      const slug = raw
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // убираем диакритику
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-      return (slug || 'name') + '-name.png';
-    }
-
-    function cdnNameUrl() {
-      return CDN_BASE + 'names/' + nameFileName();
-    }
-
-    // Файл на CDN может быть не залит — тогда в подписи будет битая картинка.
-    // Проверяем загрузкой: CORS для этого не нужен, нужен только факт загрузки.
-    function checkCdnName() {
-      const warn = document.getElementById('cdn-name-warning');
-      if (!warn) return;
-      if (!isOn('in-cdn-name')) { warn.hidden = true; return; }
-
-      const url = cdnNameUrl();
-      const probe = new Image();
-      probe.onload = () => { warn.hidden = true; };
-      probe.onerror = () => {
-        warn.hidden = false;
-        warn.textContent = 'Nothing at ' + url + ' yet. Press "Download name.png" and send the file to ' +
-          'i.ivanov to be put on the CDN, or switch this off to fall back to plain text.';
-      };
-      probe.src = url + '?t=' + encodeURIComponent(document.getElementById('in-name').value);
-    }
-
-    function downloadNamePng(btn) {
-      const img = document.getElementById('name');
-      if (!img || img.tagName !== 'IMG') return;
-      const a = document.createElement('a');
-      a.href = img.getAttribute('src');
-      a.download = nameFileName();
-      a.click();
-      if (btn) {
-        const t = btn.textContent;
-        btn.textContent = 'Downloaded';
-        setTimeout(() => { btn.textContent = t; }, 1500);
-      }
-    }
 
     // Ширина у аватара фиксированная, высота считается по пропорциям файла.
     // Поэтому важен не точный размер (320x354 для retina — нормальная загрузка),
@@ -1094,7 +1017,6 @@
       document.getElementById('telegram').href = "https://t.me/" + document.getElementById('in-telegram').value;
       document.getElementById('linkedin').href = document.getElementById('in-linkedin').value;
 
-      checkCdnName();
       syncPipedriveBlock();
     }
 
